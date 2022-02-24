@@ -12,8 +12,8 @@ from subprocess import Popen
 import time
 
 
-# 資料清理
 def data_clean():
+    # 資料清理
     report_number_list = []
     data_list = []
 
@@ -33,9 +33,6 @@ def data_clean():
     result_data = pd.read_csv(os.path.join('.', 'imported_data', 'cdc', 'asd.csv'), usecols=['SAMPLE', 'DISEASE', 'COMMENTS'], index_col=False)
     result_data['COMMENTS'] = result_data['COMMENTS'].fillna('')
 
-    # result_data['SAMPLE_DATE'] = result_data['SAMPLE_DATE'] \
-    #     .apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S').date())
-
     case_n_data = pd.read_excel(
         os.path.join('.', 'imported_data', 'cdc', '法傳編號與案次號對照表.xlsx'), header=[1], usecols=['傳染病報告單電腦編號', '案號'], index_col=False,
     ).rename(columns={'傳染病報告單電腦編號': 'REPORT', '案號': 'case_n'})
@@ -49,7 +46,6 @@ def data_clean():
     final_data['COMMENTS'] = final_data['COMMENTS'].fillna('')
     final_data['COMMENTS'] = final_data['COMMENTS'].apply(lambda x: '無資料' if not x else x)
     final_data['SAMPLE_DATE'] = final_data['SAMPLE_DATE'].fillna('')
-    # final_data['SAMPLE_DATE'] = final_data['SAMPLE_DATE'].apply(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S').date() if x else x).astype(str)
 
     # ['REPORT', 'case_n', 'NAME', 'SAMPLE', 'SAMPLE_DATE', 'SAMPLE_TYPE_DESC', 'RESULT_DESC', 'COMMENTS']
     for row in final_data.itertuples():
@@ -67,68 +63,9 @@ def data_clean():
     # print(data_list)
     return analysis(data_list, report_number_list)
 
-    # xlsx_file_list = glob.glob((os.path.abspath(os.path.join('.', 'imported_data', 'cdc', '*.xlsx'))))
-    # csv_file_list = glob.glob((os.path.abspath(os.path.join('.', 'imported_data', 'cdc', '*.csv'))))
-    # data_list = []
-    # _3rd_data_list = []
-    # report_number_list = []
-    # case_compare_list = []
-    # for file in xlsx_file_list:
-    #
-    #     if os.path.basename(file) == '法傳編號與案次號對照表.xlsx':
-    #         wb_2 = openpyxl.load_workbook(file)
-    #         sheet_name = wb_2.sheetnames
-    #         for sheet in sheet_name:
-    #             ws = wb_2[sheet]
-    #             for row in ws.values:
-    #                 # if row[0] != '傳染病報告單編號':
-    #                 if bool(re.findall(re.compile('\d{3,5}'), str(row[0]))):
-    #                     c_c_dict = {'傳染病報告單電腦編號': str(row[0]), '案例編號': row[1]}
-    #                     case_compare_list.append(c_c_dict)
-    #                     if str(row[0]) not in report_number_list:
-    #                         report_number_list.append(str(row[0]))
-    #
-    # result_data = pd.read_csv(os.path.join('.', 'asd.csv'), usecols=['SAMPLE', 'DISEASE', 'COMMENTS'], index_col=False)
-    # result_data['COMMENTS'] = result_data['COMMENTS'].fillna('')
-    #
-    # for file in csv_file_list:
-    #
-    #     if os.path.basename(file) == '2019-nCov_all_exam.csv':
-    #         df = pd.read_csv(file, usecols=['NAME', 'REPORT', 'SAMPLE_DATE',
-    #                                         'RESULT_DESC', 'SAMPLE_TYPE_DESC'], index_col=False)
-    #
-    #         df['REPORT'] = df['REPORT'].astype(str).apply(lambda x: x.replace('.0', '') if x[len(x) - 2:len(x)] == '.0' else x)
-    #         df['RESULT_DESC'] = df['RESULT_DESC'].fillna('尚無研判結果')
-    #         # '下呼吸道抽取物','鼻咽拭子/咽喉擦拭-病毒','咽喉擦拭液','痰','痰液', '鼻咽擦拭液', '唾液(機場專用)'
-    #         df = df[(df['SAMPLE_TYPE_DESC'] == '下呼吸道抽取物') | (df['SAMPLE_TYPE_DESC'] == '痰')
-    #                 | (df['SAMPLE_TYPE_DESC'] == '痰液') | (df['SAMPLE_TYPE_DESC'] == '鼻咽拭子/咽喉擦拭-病毒') | (df['SAMPLE_TYPE_DESC'] == '咽喉擦拭液')
-    #                 | (df['SAMPLE_TYPE_DESC'] == '鼻咽擦拭液') | (df['SAMPLE_TYPE_DESC'] == '唾液(機場專用)')]
-    #
-    #         df['SAMPLE_TYPE_DESC'] = df['SAMPLE_TYPE_DESC'].apply(lambda x: x.replace('痰', '痰液') if x == '痰' else x). \
-    #             apply(lambda x: x.replace('鼻咽拭子/咽喉擦拭-病毒', '咽喉擦拭液/鼻咽拭子') if x == '鼻咽拭子/咽喉擦拭-病毒' else x). \
-    #             apply(lambda x: x.replace('咽喉擦拭液', '咽喉擦拭液/鼻咽拭子') if x == '咽喉擦拭液' else x). \
-    #             apply(lambda x: x.replace('鼻咽擦拭液', '咽喉擦拭液/鼻咽拭子') if x == '鼻咽擦拭液' else x)
-    #
-    #         for row in df.itertuples():
-    #             for case in case_compare_list:
-    #                 if case['傳染病報告單電腦編號'] == row.REPORT:
-    #                     # 小於等於今日的資料才要
-    #                     if datetime.datetime.strptime(row.SAMPLE_DATE, '%Y-%m-%d').date() <= datetime.datetime.now().date():
-    #                         # 去除無效檢體
-    #                         if row.RESULT_DESC != '無效檢體':
-    #                             data_dict = {'案例編號': case['案例編號'], '傳染病報告單電腦編號': str(row.REPORT), '姓名(完整)': row.NAME,
-    #                                          '最後一套採檢日期': row.SAMPLE_DATE, '檢體種類': row.SAMPLE_TYPE_DESC, '綜合檢驗結果': row.RESULT_DESC}
-    #
-    #                             data_list.append(data_dict)
-    # print(data_list)
-    #
-    # return analysis(data_list, report_number_list)
-
-
-# 找出最新日期
-
 
 def find_latest_date(data_list, _3_date_check_list):
+    # 找出最新日期
     final_list = []
     # print(data_list)
     sample_kind_list = ['下呼吸道抽取物', '咽喉擦拭液/鼻咽拭子', '痰液', '唾液(機場專用)']
@@ -294,8 +231,8 @@ def data_inline(data_list, report_number_list):
     return final_list
 
 
-# 寫成 xlsx
 def write_xlsx(analyzed_data):
+    # 寫成 xlsx
     data_1 = analyzed_data[0]
     data_2 = analyzed_data[1]
     data_len_1 = len(analyzed_data[0])
@@ -446,7 +383,7 @@ def download_raw_data(file_name, code):
 
 # 下載案次號與法傳編號對照表
 def download_comparison_data():
-    url = "http://192.168.92.29:8080/share.cgi?ssid=0mUU3e7&fid=0mUU3e7&path=%2F02_%E7%A2%BA%E8%A8%BA%E5%80%8B%E6%A1%88%E7%96%AB%E8%AA%BF&filename=" \
+    url = "http://IP/share.cgi?ssid=0mUU3e7&fid=0mUU3e7&path=%2F02_%E7%A2%BA%E8%A8%BA%E5%80%8B%E6%A1%88%E7%96%AB%E8%AA%BF&filename=" \
           "%E5%8D%80%E7%AE%A1_%E5%80%8B%E6%A1%88%E6%B3%95%E5%82%B3%E7%B7%A8%E8%99%9F%E5%8F%8A%E6%A1%88%E6%AC%A1%E8%99%9F%E5%B0%8D%E7%85%A7%E8%A1%A8.xlsx&" \
           "openfolder=forcedownload&ep="
     with open(os.path.join('', 'imported_data', 'cdc', '法傳編號與案次號對照表.xlsx'), 'wb') as f:
