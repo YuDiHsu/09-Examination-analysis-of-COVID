@@ -17,11 +17,11 @@ import re
 
 
 def download_raw_data(file_name, code):
-    dsn = cx_Oracle.makedsn('192.168.170.52', '1561', service_name='DW')
+    dsn = cx_Oracle.makedsn('IP', 'port', service_name='DW')
 
     conn = cx_Oracle.connect(
-        user='sas',
-        password='ueCr5brAD6u4rAs62t9a',
+        user='username',
+        password='pwd',
         dsn=dsn,
         encoding='UTF8',
         nencoding='UTF8'
